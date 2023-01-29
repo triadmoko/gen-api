@@ -48,7 +48,9 @@ func createModule(projectName string, version string) {
 func createMain() {
 	d1 := []byte(`
 package main
+
 import "fmt"
+
 func main() {
 	fmt.Println("Hello World")
 } `)
