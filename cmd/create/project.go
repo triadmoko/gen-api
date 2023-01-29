@@ -4,7 +4,12 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package create
 
 import (
+	"log"
+	"os"
+	"time"
+
 	"github.com/spf13/cobra"
+	"github.com/triadmoko/gen-api/helper"
 )
 
 // projectCmd represents the project command
@@ -12,17 +17,10 @@ var (
 	projectName string
 	projectCmd  = &cobra.Command{
 		Use:   "project",
-		Short: "A brief description of your command",
-		Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+		Short: "Create First Your Project",
+		Long:  ``,
 		Run: func(cmd *cobra.Command, args []string) {
-			if len(projectName) > 0 {
-				
-			}
+			createProject(projectName)
 		},
 	}
 )
@@ -30,14 +28,47 @@ to quickly create a Cobra application.`,
 func init() {
 	projectCmd.Flags().StringVarP(&projectName, "name", "n", "", "your project name")
 	Create.AddCommand(projectCmd)
+}
 
-	// Here you will define your flags and configuration settings.
+func createProject(projectName string) {
+	version := getVersion()
+	createDirProject(projectName)
+	createModule(projectName, version)
+	createMain()
+}
 
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// projectCmd.PersistentFlags().String("foo", "", "A help for foo")
+func createModule(projectName string, version string) {
+	d1 := []byte("module " + projectName + "\n\ngo " + version)
+	err := os.WriteFile(projectName+"/go.mod", d1, 0644)
+	helper.Check(err)
+	log.Println("Debug := Create Module Project")
+	time.Sleep(1 * time.Second)
+}
 
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// projectCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+func createMain() {
+	d1 := []byte(`
+package main
+import "fmt"
+func main() {
+	fmt.Println("Hello World")
+} `)
+
+	err := os.WriteFile(projectName+"/main.go", d1, 0644)
+	helper.Check(err)
+	log.Println("Debug := Create Main Project")
+	time.Sleep(1 * time.Second)
+}
+
+func getVersion() string {
+	version := helper.GoVersion()
+	log.Println("Debug := Get Version Golang")
+	time.Sleep(1 * time.Second)
+	return version
+}
+
+func createDirProject(projectName string) {
+	err := os.MkdirAll("./"+projectName, os.ModePerm)
+	helper.Check(err)
+	log.Println("Debug := Create Directory Project")
+	time.Sleep(1 * time.Second)
 }

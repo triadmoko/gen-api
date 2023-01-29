@@ -1,5 +1,5 @@
 /*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
+Copyright © 2023 NAME HERE triadmoko12@gmail.com
 */
 package create
 
@@ -13,6 +13,8 @@ var Create = &cobra.Command{
 	Short: "command create your project",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Help()
+		if err := cmd.Help(); err != nil {
+			cmd.PrintErr(err)
+		}
 	},
 }

@@ -1,28 +1,30 @@
 /*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
+Copyright © 2023 NAME HERE triadmoko12@gmail.com
 */
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"github.com/triadmoko/gen-api/cmd/create"
+)
+
+var (
+	cfgFile     string
+	userLicense string
 )
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "gen-api",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Code generator for RestAPI With Gen-API",
+	Long:  `Gen-API is tools for generate code and result RestAPI.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+	// Run: func(cmd *cobra.Command, args []string) { cmd.Help() },
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -36,15 +38,40 @@ func Execute() {
 func subCommands() {
 	rootCmd.AddCommand(create.Create)
 }
+
 func init() {
+	cobra.OnInitialize(initConfig)
+
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.cobra.yaml)")
+	rootCmd.PersistentFlags().StringP("author", "a", "Triadmoko Denny Fatrosa", "author name for copyright attribution")
+	rootCmd.PersistentFlags().StringVarP(&userLicense, "license", "l", "", "name of license for the project")
+	rootCmd.PersistentFlags().Bool("viper", true, "use Viper for configuration")
+	viper.BindPFlag("author", rootCmd.PersistentFlags().Lookup("author"))
+	viper.BindPFlag("useViper", rootCmd.PersistentFlags().Lookup("viper"))
+	viper.SetDefault("author", "Triadmoko Denny Fatrosa")
+	viper.SetDefault("license", "apache")
+
 	subCommands()
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
+}
 
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.gen-api.yaml)")
+func initConfig() {
+	if cfgFile != "" {
+		// Use config file from the flag.
+		viper.SetConfigFile(cfgFile)
+	} else {
+		// Find home directory.
+		home, err := os.UserHomeDir()
+		cobra.CheckErr(err)
 
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+		// Search config in home directory with name ".cobra" (without extension).
+		viper.AddConfigPath(home)
+		viper.SetConfigType("yaml")
+		viper.SetConfigName(".cobra")
+	}
+
+	viper.AutomaticEnv()
+
+	if err := viper.ReadInConfig(); err == nil {
+		fmt.Println("Using config file:", viper.ConfigFileUsed())
+	}
 }
